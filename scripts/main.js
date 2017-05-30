@@ -5,48 +5,28 @@ $(function(){
     var STATUS_DONE = 2;
     var templates = {};
     
-    function buildToDoPage (title, entries) {
+    function buildToDoPage (content) {
 
-        var $main = $(templates.layout);
-            $main.find("h1").text(title);
-
-       $("body").append($main);
+        var layoutTpl = Handlebars.compile(templates.layout);
+            
+       $("body").append(layoutTpl(content));
 
  }
 
     function buildATodoList (dataObject) {
         
-            var $ulElement = $(".entry-list"),
-                $row = $(templates.row);
+        $(".entry-list").append(createToDoListItems(dataObject));
 
-        $.each(dataObject, function (i, note) {
+    }
 
-            $ulElement.append(createToDoListItem(note, $row));
-
-        });
+    function createToDoListItems (dataObject) {
+        
+        var rowTpl = Handlebars.compile(templates.row);
+            
+        return rowTpl(dataObject);
 
     }
     
-    function createToDoListItem (todoItem, $rowTemplate) {
-        
-         var $newRow = $rowTemplate.clone()
-                                    .attr({
-                                        
-                                        "item-id" : todoItem.id, 
-                                        "item-status" : todoItem.status
-                                    });
-            
-         $newRow.find("span").text(todoItem.message);
-
-        if (todoItem.status === STATUS_DONE) {
-                
-            $newRow.addClass("checked");
-
-        }
-        
-        return $newRow;
-        
-    }
     
     /** Standard jQuery AJAX request
      * 
@@ -257,7 +237,7 @@ $(function(){
 
              if (status === "success") {
 
-                var $newEntry = createToDoListItem(result);
+                var $newEntry = createToDoListItems([result]);
 
                 $(".entry-list").prepend($newEntry);
                 
@@ -366,9 +346,16 @@ $(function(){
 
             templates = tpls;
 
-            buildToDoPage("TODO list!", entries);            
-            buildATodoList(entries);
-            bindEvents();
+            $.getJSON('content.json', function (content){
+
+                //console.log(content.title);
+                //title = content;
+
+                buildToDoPage(content);            
+                buildATodoList(entries);
+                bindEvents();
+            })
+
         
         });
 
